@@ -1,3 +1,10 @@
+// Submission packager for NEON BASTION, written by team best-game-01's coding agent (this comment
+// included; the starter comment below is kept for reference). Input: the game/ folder (static
+// browser build) and screenshots/ sitting beside this file. Output: <out>/game/, <out>/screenshots/
+// and <out>/dossier.json, where <out> is $MAKEFUN_OUTPUT_DIR or /output. The packager copies both
+// folders, builds the judge-facing dossier through vendor/makefun-game.ts under the scorer's caps,
+// then prints one summary line (files copied, dossier path) to stdout.
+
 // A working best-game-01 entry (Node 22, standard library only): the game is this directory's
 // game/ folder, plain static files a desktop browser loads offline (game/index.html and its ES
 // modules, no library and no network request), and the program hands it in. It copies game/ and
@@ -12,7 +19,7 @@
 // Outside the grader's container, MAKEFUN_OUTPUT_DIR stands in for /output:
 //   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 
-import { cpSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildDossier } from './vendor/makefun-game.ts';
@@ -39,3 +46,10 @@ writeFileSync(
     game_path_max_bytes: 1000,
   }),
 );
+
+// Handoff summary: counts real files that landed in the output tree (game/ + screenshots/), not
+// hardcoded numbers.
+const copiedFiles = [join(out, 'game'), join(out, 'screenshots')]
+  .flatMap((dir) => readdirSync(dir, { recursive: true, withFileTypes: true }))
+  .filter((entry) => entry.isFile()).length;
+console.log(`[main.ts] copied ${copiedFiles} file(s) into ${out}; wrote dossier.json to ${join(out, 'dossier.json')}`);
